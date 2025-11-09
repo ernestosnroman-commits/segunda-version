@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="img" href="img/logo.png">
+<title>Intenta detectar el problema - Nivel 1</title>
+<style>
+body { font-family: Arial, sans-serif; background: #f3f3f3; text-align: center; margin: 0; padding: 20px; overflow-x: hidden; }
+h1 { color: #333; }
+#game-container { position: relative; display: inline-block; user-select: none; -webkit-user-drag: none; }
+#game-image { max-width: 100%; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.3); user-select: none; -webkit-user-drag: none; }
+.marker {
+    position: absolute;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    transition: opacity 1.5s ease;
+}
+#result { margin-top: 15px; font-size: 1.4em; font-weight: bold; }
+#ready-btn { margin-top: 20px; padding: 10px 30px; font-size: 1.2em; cursor: pointer; border-radius: 30px; background-color: #28a745; color: white; border: none; }
+.balloon {
+    position: absolute;
+    width: 40px;
+    height: 60px;
+    border-radius: 50%;
+    animation: floatUp linear infinite;
+}
+@keyframes floatUp {
+    0% { transform: translateY(0) rotate(0deg); }
+    100% { transform: translateY(-600px) rotate(360deg); }
+}
+#summary {
+    margin-top: 20px;
+    text-align: left;
+    display: none;
+    background: #fff;
+    padding: 15px;
+    border-radius: 10px;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+    box-shadow: 0 0 10px rgba(0,0,0,0.2);
+}
+</style>
+</head>
+<body>
+
+<h1>🎯 Nivel 4  - Detecta el defecto</h1>
+<p>Selecciona los 2 defectos en la imagen y presiona "Listo" cuando quieras rendirte.</p>
+
+<div id="game-container">
+  <img id="game-image" src="img/CUATRO.jpg" alt="Objeto a inspeccionar">
+</div>
+
+<div id="result"></div>
+<button id="ready-btn">Listo</button>
+<div id="summary"></div>
+
+<!-- 🎵 Audios -->
+<audio id="audio-acierto" src="audios/bob esponja.wav" preload="auto"></audio>
+<audio id="audio-fallo" src="audios/intenta.mp3" preload="auto"></audio>
+
+<script>
+const img = document.getElementById('game-image');
+const container = document.getElementById('game-container');
+const result = document.getElementById('result');
+const readyBtn = document.getElementById('ready-btn');
+const summaryDiv = document.getElementById('summary');
+
+// Audios
+const audioAcierto = document.getElementById('audio-acierto');
+const audioFallo = document.getElementById('audio-fallo');
+
+// Defectos
+const defectos = [
+    { x: 501, y: 715, radio: 40, descripcion: '' },
+    { x: 506, y: 514, radio: 70, descripcion: '' },
+];
+
+
+let selectedMarkers = [];
+let isDragging = false;
+let center = { x: 0, y: 0 };
+let marker = null;
+
+// CONTADOR PARA CONTROLAR FRECUENCIA DE AUDIO (2-3 intentos aleatorio)
+let contadorAudio = 0;
+function maybePlay(audio) {
+    contadorAudio++;
+    const umbral = Math.floor(Math.random() * 2) + 2; // 2 o 3
+    if (contadorAudio >= umbral) {
+        try {
+            audio.currentTime = 0;
+        } catch(e) {}
+        audio.play().catch(()=>{ /* ignora errores de autoplay */ });
+        contadorAudio = 0;
+    }
+}
+
+function createMarker(x, y, color, size) {
+    const m = document.createElement('div');
+    m.classList.add('marker');
+    m.style.left = `${x}px`;
+    m.style.top = `${y}px`;
+    m.style.width = `${size*2}px`;
+    m.style.height = `${size*2}px`;
+    m.style.background = color;
+    m.style.opacity = '1';
+    container.appendChild(m);
+    return m;
+}
+
+// Globos para 100%
+function createBalloons() {
+    for(let i=0;i<20;i++){
+        const balloon = document.createElement('div');
+        balloon.classList.add('balloon');
+        balloon.style.background = `hsl(${Math.random()*360}, 70%, 50%)`;
+        balloon.style.left = `${Math.random()*window.innerWidth}px`;
+        balloon.style.width = `${20 + Math.random()*30}px`;
+        balloon.style.height = `${30 + Math.random()*50}px`;
+        balloon.style.animationDuration = `${2+Math.random()*3}s`;
+        document.body.appendChild(balloon);
+    }
+}
+
+// Selección con arrastre
+img.addEventListener('mousedown', (e) => {
+    const rect = img.getBoundingClientRect();
+    center.x = e.clientX - rect.left;
+    center.y = e.clientY - rect.top;
+    isDragging = true;
+
+    marker = createMarker(center.x, center.y, 'rgba(0,0,255,0.2)', 0);
+});
+
+img.addEventListener('mousemove', (e) => {
+    if (!isDragging) return;
+    const rect = img.getBoundingClientRect();
+    const dx = (e.clientX - rect.left) - center.x;
+    const dy = (e.clientY - rect.top) - center.y;
+    const radius = Math.sqrt(dx*dx + dy*dy);
+    marker.style.width = `${radius*2}px`;
+    marker.style.height = `${radius*2}px`;
+});
+
+img.addEventListener('mouseup', (e) => {
+    if (!isDragging) return;
+    isDragging = false;
+
+    let acierto = false;
+    for (let d of defectos) {
+        const dx = center.x - d.x;
+        const dy = center.y - d.y;
+        const distancia = Math.sqrt(dx*dx + dy*dy);
+        if (distancia <= d.radio) {
+            acierto = true;
+            marker.style.background = 'rgba(0,255,0,0.5)';
+            selectedMarkers.push({ marker, acierto, defecto: d });
+
+            // 🔊 Sonido de acierto SIEMPRE
+            try { audioAcierto.currentTime = 0; } catch(e) {}
+            audioAcierto.play().catch(()=>{});
+
+            setTimeout(() => {
+                const descripcion = prompt(`Describe el defecto que encontraste:`);
+                if (descripcion) marker.definicion = descripcion;
+            }, 200);
+            break;
+        }
+    }
+
+    if (!acierto) {
+        marker.style.background = 'rgba(255,0,0,0.5)';
+        marker.style.transition = 'opacity 1.5s ease';
+        marker.style.opacity = '0';
+        setTimeout(() => { marker.remove(); }, 1500);
+
+        // 🔊 Sonido de fallo ALEATORIO
+        maybePlay(audioFallo);
+    }
+});
+
+// Botón "Listo"
+readyBtn.addEventListener('click', () => {
+    const aciertos = selectedMarkers.filter(m => m.acierto).length;
+    const porcentaje = Math.round((aciertos / defectos.length) * 100);
+
+    // Mensajes según porcentaje
+    let mensaje = '';
+    if(porcentaje < 25) mensaje = "😬 Eres terrible, mejora tu vista";
+    else if(porcentaje < 50) mensaje = "😐 Sigue mejorando";
+    else if(porcentaje < 80) mensaje = "🙂 Eres bueno";
+    else if(porcentaje < 100) mensaje = "🎉 Excelente";
+    else { 
+        mensaje = "🥳 Enhorabuena, lo hiciste bien"; 
+        createBalloons(); 
+    }
+
+    result.textContent = `🔹 Tu porcentaje de aciertos: ${porcentaje}% - ${mensaje}`;
+
+    // Mostrar todos los defectos
+    defectos.forEach(d => {
+        const marcado = selectedMarkers.find(m => m.defecto === d);
+        if (!marcado) {
+            createMarker(d.x, d.y, 'rgba(255,0,0,0.5)', d.radio);
+        }
+    });
+
+    // Mostrar resumen final de descripciones
+    let resumen = "<h3>Resumen de Defectos</h3><ul>";
+    defectos.forEach((d,i) => {
+        const marcado = selectedMarkers.find(m => m.defecto === d);
+        if(marcado && marcado.marker.definicion) {
+            resumen += `<li>Defecto ${i+1}: ${marcado.marker.definicion}</li>`;
+        } else {
+            resumen += `<li>Defecto ${i+1}: No detectado</li>`;
+        }
+    });
+    resumen += "</ul>";
+    summaryDiv.innerHTML = resumen;
+    summaryDiv.style.display = 'block';
+
+    // 🔹 BOTÓN DE SIGUIENTE NIVEL
+    const nextBtn = document.createElement('button');
+    nextBtn.textContent = 'Siguiente nivel ▶️';
+    nextBtn.style.marginTop = '15px';
+    nextBtn.style.padding = '10px 25px';
+    nextBtn.style.fontSize = '1.1em';
+    nextBtn.style.borderRadius = '20px';
+    nextBtn.style.border = 'none';
+    nextBtn.style.backgroundColor = '#007bff';
+    nextBtn.style.color = 'white';
+    nextBtn.style.cursor = 'pointer';
+    nextBtn.style.transition = 'background 0.3s';
+    nextBtn.onmouseover = () => nextBtn.style.backgroundColor = '#0056b3';
+    nextBtn.onmouseout = () => nextBtn.style.backgroundColor = '#007bff';
+
+    nextBtn.addEventListener('click', () => {
+        window.location.href = 'nivel5.html'; // Cambia este enlace al nivel que desees
+    });
+
+    summaryDiv.appendChild(nextBtn);
+});
+</script>
+
+</body>
+</html>

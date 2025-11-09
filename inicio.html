@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="img" href="img/logo.png">
+
+<title>Inicio del Juego</title>
+<style>
+/* Reset básico */
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+
+/* Fondo y contenedor */
+body {
+    height: 100vh;
+    background: linear-gradient(135deg, #1e3c72, #2600d0);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: rgb(255, 255, 255);
+}
+
+/* Caja central */
+#welcome-box {
+    text-align: center;
+    background: rgba(255,255,255,0.05);
+    padding: 60px 40px;
+    border-radius: 20px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+    backdrop-filter: blur(10px);
+    max-width: 500px;
+}
+
+/* Título */
+#welcome-box h1 {
+    font-size: 2.5em;
+    margin-bottom: 20px;
+    color: #fff;
+    text-shadow: 2px 2px 6px rgba(0,0,0,0.5);
+}
+
+/* Mensaje */
+#welcome-box p {
+    font-size: 1.2em;
+    margin-bottom: 40px;
+    color: #f0f0f0;
+}
+
+/* Botón como enlace */
+#start-btn {
+    display: inline-block;
+    padding: 15px 50px;
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #fff;
+    background: linear-gradient(135deg, #28a745, #218838);
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+    text-decoration: none; /* quita subrayado */
+    transition: all 0.3s ease;
+}
+
+#start-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+}
+
+#start-btn:active {
+    transform: scale(0.95);
+}
+</style>
+</head>
+<body>
+
+<div id="welcome-box">
+    
+    <h1>💡 Bienvenido Inspector</h1>
+    <p>¿Estás listo para inspeccionar todo como un profesional?</p>
+    <!-- Botón usando <a> -->
+    <a href="nivel1.html" id="start-btn">Comenzar</a>
+</div>
+
+<script>
+// Opcional: mensaje al cargar la página
+window.addEventListener('load', () => {
+    console.log("💡 ¡Estás listo para inspeccionar todo como un profesional!");
+});
+</script>
+
+</body>
+</html>

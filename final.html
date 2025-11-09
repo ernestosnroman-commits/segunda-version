@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="img" href="img/logo.png">
+<title>Fin del Juego</title>
+<style>
+body {
+    height: 100vh;
+    margin: 0;
+    background: linear-gradient(135deg, #0057e7, #007bff); /* Fondo azul */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    overflow: hidden;
+}
+
+/* Ventana principal */
+#end-box {
+    background: rgba(255,255,255,0.1);
+    border-radius: 20px;
+    padding: 40px 60px;
+    text-align: center;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    backdrop-filter: blur(10px);
+    z-index: 10;
+    position: relative;
+}
+
+/* Botones */
+button {
+    background-color: #28a745;
+    border: none;
+    color: white;
+    padding: 12px 30px;
+    margin: 10px;
+    font-size: 1.1em;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+button:hover {
+    transform: scale(1.05);
+    background-color: #34ce57;
+}
+
+/* Globos */
+.balloon {
+    position: absolute;
+    bottom: -100px;
+    border-radius: 50%;
+    opacity: 0.9;
+    animation: floatUp 5s linear infinite;
+}
+
+@keyframes floatUp {
+    from { transform: translateY(0); opacity: 1; }
+    to { transform: translateY(-110vh); opacity: 0; }
+}
+
+/* Imágenes animadas desde abajo */
+.gif {
+    position: absolute;
+    bottom: -300px; /* punto inicial fuera de pantalla */
+    opacity: 0;
+    animation: subir 3s ease-out forwards;
+}
+
+.gif.left {
+    left: 5%;
+}
+
+.gif.right {
+    right: 5%;
+}
+
+@keyframes subir {
+    0% { transform: translateY(0); opacity: 0; }
+    60% { transform: translateY(-230px); opacity: 1; }
+    80% { transform: translateY(-250px); }
+    100% { transform: translateY(-240px); opacity: 1; } /* Se queda visible */
+}
+</style>
+</head>
+<body>
+
+<div id="end-box">
+    <h1>🎯 Fin del juego</h1>
+    <p>¿Estás comprometido con la calidad?</p>
+    <button id="yes-btn">Sí</button>
+    <button id="no-btn">No</button>
+</div>
+
+<!-- GIFs -->
+<img src="img/final.png" alt="Felicita izquierda" class="gif left" style="width: 200px; display:none;">
+<img src="felicitacion2.gif" alt="Felicita derecha" class="gif right" style="width: 200px; display:none;">
+
+<!-- Audios -->
+<audio id="celebration-sound" src="audios/apalusos.mp3"></audio>
+<audio id="sad-sound" src="audios/decepcion.mp3"></audio>
+
+<script>
+const yesBtn = document.getElementById("yes-btn");
+const noBtn = document.getElementById("no-btn");
+const sound = document.getElementById("celebration-sound");
+const sadSound = document.getElementById("sad-sound");
+const gifs = document.querySelectorAll(".gif");
+
+yesBtn.addEventListener("click", () => {
+    document.getElementById("end-box").style.display = "none";
+    sound.play();
+    lanzarGlobos();
+    mostrarGIFs();
+});
+
+noBtn.addEventListener("click", () => {
+    sadSound.play();
+    alert("Como vas a decir que no :(");
+});
+
+// Función para lanzar globos
+function lanzarGlobos() {
+    for (let i = 0; i < 25; i++) {
+        const balloon = document.createElement("div");
+        balloon.classList.add("balloon");
+        const size = Math.random() * 40 + 20;
+        balloon.style.width = `${size}px`;
+        balloon.style.height = `${size * 1.2}px`;
+        balloon.style.left = `${Math.random() * 100}vw`;
+        balloon.style.background = `hsl(${Math.random() * 360}, 100%, 60%)`;
+        balloon.style.animationDuration = `${4 + Math.random() * 3}s`;
+        document.body.appendChild(balloon);
+
+        setTimeout(() => balloon.remove(), 10000);
+    }
+
+    const msg = document.createElement("h2");
+    msg.textContent = "🎉 ¡Comprometido a la calidad de mi trabajo! 🎉";
+    msg.style.position = "absolute";
+    msg.style.top = "45%";
+    msg.style.left = "50%";
+    msg.style.transform = "translate(-50%, -50%)";
+    msg.style.color = "white";
+    msg.style.textShadow = "2px 2px 8px black";
+    document.body.appendChild(msg);
+}
+
+// Mostrar GIFs después de pulsar "Sí" y que se queden
+function mostrarGIFs() {
+    gifs.forEach((gif, index) => {
+        setTimeout(() => {
+            gif.style.display = "block";
+            gif.style.animationPlayState = "running";
+        }, 500 + index * 300);
+    });
+}
+</script>
+</body>
+</html>
